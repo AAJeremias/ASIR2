@@ -1,0 +1,53 @@
+-----------PowerShell------------
+##Server
+$port=2020
+$endpoint = new-object System.Net.IPEndPoint ([IPAddress]::Any,$port)
+$udpclient=new-Object System.Net.Sockets.UdpClient $port
+$content=$udpclient.Receive([ref]$endpoint)
+[Text.Encoding]::ASCII.GetString($content)
+
+
+##Client
+$port=2020
+$endpoint = new-object System.Net.IPEndPoint ([IPAddress]::Loopback,$port)
+$udpclient=new-Object System.Net.Sockets.UdpClient
+$val=date
+$b=[Text.Encoding]::ASCII.GetBytes($val.ToString())
+$bytesSent=$udpclient.Send($b,$b.length,$endpoint)
+$udpclient.Close()
+
+
+
+#### Filtro por tamaño de archivo para impresora ####
+
+"Prueba1234" | Out-Printer "Brother Color Leg Type1 Class Driver"
+foreach($impresora in Get-Printer){ 
+    foreach ($cola in (Get-PrintJob -PrinterName $impresora.Name)){
+     if ($cola.size -gt 45KB){
+      if($cola.UserName -eq "administrador"){
+        Remove-PrintJob -ID $cola.id -PrinterName "Brother Color Leg Type1 Class Driver"
+     }
+    }
+    else{}
+}
+Get-PrintJob "Brother Color Leg Type1 Class Driver" | Select id, size, JobStatus, DocumentName, ComputerName
+
+
+
+--------------- PHP ------------------
+
+<?php
+	
+		$nombre = htmlspecialchars($_GET['nombre']); 
+		
+		$var = "ini/datos.ini";
+		$base = parse_ini_file($var);		
+		$php = new PDO($base["baseDeDatos"],$base["usuario"],$base["password"]);
+		
+		$con = $php->prepare("INSERT INTO trabajos VALUES (DEFAULT,:tex);");
+		$con->bindParam(':tex',$nombre);
+		$con->execute();
+
+		//$resultado = $registros[0][1];
+	?>
+	<h1><?php echo "Subido a la BD" ?></h1>
